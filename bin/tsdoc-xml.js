@@ -1,28 +1,32 @@
 #!/usr/bin/env node
 const ts = require('typescript');
 const run = require('../dist').default;
+const formatting = require('../dist').formatting;
 const path = require('path');
 
-(async ([fileName]) => {
-  const inputFileName = path.resolve(process.cwd(), fileName);
+function formatDiagnostic(diagnostic) {}
+
+(async ([...fileNames]) => {
+  const inputFileNames = fileNames.map(fileName =>
+    path.resolve(process.cwd(), fileName)
+  );
   console.log('TSDOC-XML');
-  console.group('Parameters:');
-  console.log(`File:\t${inputFileName}`);
+  console.group('Files:');
+  inputFileNames.forEach(fileName => console.log(fileName));
   console.groupEnd();
   try {
-    const out = run(inputFileName, {
-      target: ts.ScriptTarget.ES5,
-
+    const { diagnostics, documents } = run(inputFileNames, {
       compilerOptions: {
         lib: 'es2015',
-        // noImplicitAny: true,
-        // removeComments: true,
-        // preserveConstEnums: true,
-        // sourceMap: true,
       },
     });
     console.group('Output:');
-    console.dir(out);
+    console.dir(documents);
+    console.groupEnd();
+    console.group(`Compiler diagnostics (${diagnostics.length}):`);
+    diagnostics.forEach(error =>
+      console.log(`> ${formatting.formatDiagnostic(error)}`)
+    );
     console.groupEnd();
   } catch (error) {
     console.group('Run error:');

@@ -1,4 +1,3 @@
-import os from 'os';
 import * as tsdoc from '@microsoft/tsdoc';
 
 export function getTsdocParser() {
@@ -30,9 +29,5 @@ export function getTsdocParser() {
     customModifierDefinition,
   ]);
 
-  console.log(
-    os.EOL + 'Invoking TSDocParser with custom configuration...' + os.EOL
-  );
-  const tsdocParser = new tsdoc.TSDocParser(customConfiguration);
-  return tsdocParser;
+  return new tsdoc.TSDocParser(customConfiguration);
 }

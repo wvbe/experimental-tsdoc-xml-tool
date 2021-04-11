@@ -1,3 +1,4 @@
-import { runForFile } from './runForFile';
+import { runForFiles } from './runForFile';
 
-export default runForFile;
+export * as formatting from './formatting/formatDiagnostic';
+export default runForFiles;
