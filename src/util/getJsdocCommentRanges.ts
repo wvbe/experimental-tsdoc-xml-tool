@@ -8,32 +8,25 @@ import * as ts from 'typescript';
  * Function copied from:
  * https://github.com/microsoft/tsdoc/blob/master/api-demo/src/advancedDemo.ts#L51
  */
-export function getJSDocCommentRanges(
-  node: ts.Node,
-  text: string
-): ts.CommentRange[] {
-  const commentRanges: ts.CommentRange[] = [];
+export function getJSDocCommentRanges(node: ts.Node, text: string): ts.CommentRange[] {
+	const commentRanges: ts.CommentRange[] = [];
 
-  switch (node.kind) {
-    case ts.SyntaxKind.Parameter:
-    case ts.SyntaxKind.TypeParameter:
-    case ts.SyntaxKind.FunctionExpression:
-    case ts.SyntaxKind.ArrowFunction:
-    case ts.SyntaxKind.ParenthesizedExpression:
-      commentRanges.push(
-        ...(ts.getTrailingCommentRanges(text, node.pos) || [])
-      );
-      break;
-  }
-  commentRanges.push(...(ts.getLeadingCommentRanges(text, node.pos) || []));
+	switch (node.kind) {
+		case ts.SyntaxKind.Parameter:
+		case ts.SyntaxKind.TypeParameter:
+		case ts.SyntaxKind.FunctionExpression:
+		case ts.SyntaxKind.ArrowFunction:
+		case ts.SyntaxKind.ParenthesizedExpression:
+			commentRanges.push(...(ts.getTrailingCommentRanges(text, node.pos) || []));
+			break;
+	}
+	commentRanges.push(...(ts.getLeadingCommentRanges(text, node.pos) || []));
 
-  // True if the comment starts with '/**' but not if it is '/**/'
-  return commentRanges.filter(
-    comment =>
-      text.charCodeAt(comment.pos + 1) ===
-        0x2a /* ts.CharacterCodes.asterisk */ &&
-      text.charCodeAt(comment.pos + 2) ===
-        0x2a /* ts.CharacterCodes.asterisk */ &&
-      text.charCodeAt(comment.pos + 3) !== 0x2f /* ts.CharacterCodes.slash */
-  );
+	// True if the comment starts with '/**' but not if it is '/**/'
+	return commentRanges.filter(
+		comment =>
+			text.charCodeAt(comment.pos + 1) === 0x2a /* ts.CharacterCodes.asterisk */ &&
+			text.charCodeAt(comment.pos + 2) === 0x2a /* ts.CharacterCodes.asterisk */ &&
+			text.charCodeAt(comment.pos + 3) !== 0x2f /* ts.CharacterCodes.slash */
+	);
 }

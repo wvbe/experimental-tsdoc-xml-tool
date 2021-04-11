@@ -10,54 +10,43 @@ import { IFoundComment } from '../types';
  * Function copied and adapted from `walkCompilerAstAndFindComments`:
  * https://github.com/microsoft/tsdoc/blob/master/api-demo/src/advancedDemo.ts#L85
  */
-export function getTsdocCommentsForAst(
-  node: ts.Node,
-  parentSourceFile?: ts.SourceFile
-) {
-  const foundComments: IFoundComment[] = [];
+export function getTsdocCommentsForAst(node: ts.Node, parentSourceFile?: ts.SourceFile) {
+	const foundComments: IFoundComment[] = [];
 
-  // @BUG NOTICE
-  // For an unknown reason, node.getSourceFile sometimes returns undefined.
-  // As a workaround, this recursive funciton simply passes the last known sourceFile along during traversal.
-  const sourceFile = node.getSourceFile() || parentSourceFile;
+	// @BUG NOTICE
+	// For an unknown reason, node.getSourceFile sometimes returns undefined.
+	// As a workaround, this recursive funciton simply passes the last known sourceFile along during traversal.
+	const sourceFile = node.getSourceFile() || parentSourceFile;
 
-  // The TypeScript AST doesn't store code comments directly.  If you want to find *every* comment,
-  // you would need to rescan the SourceFile tokens similar to how tsutils.forEachComment() works:
-  // https://github.com/ajafff/tsutils/blob/v3.0.0/util/util.ts#L453
-  //
-  // However, for this demo we are modeling a tool that discovers declarations and then analyzes their doc comments,
-  // so we only care about TSDoc that would conventionally be associated with an interesting AST node.
-  const buffer: string = sourceFile.getFullText(); // don't use getText() here!
+	// The TypeScript AST doesn't store code comments directly.  If you want to find *every* comment,
+	// you would need to rescan the SourceFile tokens similar to how tsutils.forEachComment() works:
+	// https://github.com/ajafff/tsutils/blob/v3.0.0/util/util.ts#L453
+	//
+	// However, for this demo we are modeling a tool that discovers declarations and then analyzes their doc comments,
+	// so we only care about TSDoc that would conventionally be associated with an interesting AST node.
+	const buffer: string = sourceFile.getFullText(); // don't use getText() here!
 
-  // Only consider nodes that are part of a declaration form.  Without this, we could discover
-  // the same comment twice (e.g. for a MethodDeclaration and its PublicKeyword).
-  if (isDeclarationKind(node.kind)) {
-    // Find "/** */" style comments associated with this node.
-    // Note that this reinvokes the compiler's scanner -- the result is not cached.
-    const comments: ts.CommentRange[] = getJSDocCommentRanges(node, buffer);
+	// Only consider nodes that are part of a declaration form.  Without this, we could discover
+	// the same comment twice (e.g. for a MethodDeclaration and its PublicKeyword).
+	if (isDeclarationKind(node.kind)) {
+		// Find "/** */" style comments associated with this node.
+		// Note that this reinvokes the compiler's scanner -- the result is not cached.
+		const comments: ts.CommentRange[] = getJSDocCommentRanges(node, buffer);
 
-    if (comments.length > 0) {
-      for (const comment of comments) {
-        foundComments.push({
-          compilerNode: node,
-          textRange: tsdoc.TextRange.fromStringRange(
-            buffer,
-            comment.pos,
-            comment.end
-          ),
-        });
-      }
-    }
-  }
+		if (comments.length > 0) {
+			for (const comment of comments) {
+				foundComments.push({
+					compilerNode: node,
+					textRange: tsdoc.TextRange.fromStringRange(buffer, comment.pos, comment.end)
+				});
+			}
+		}
+	}
 
-  // @TODO Probably not flatten here
-  node.forEachChild(child => {
-    foundComments.splice(
-      foundComments.length,
-      0,
-      ...getTsdocCommentsForAst(child, sourceFile)
-    );
-  });
+	// @TODO Probably not flatten here
+	node.forEachChild(child => {
+		foundComments.splice(foundComments.length, 0, ...getTsdocCommentsForAst(child, sourceFile));
+	});
 
-  return foundComments;
+	return foundComments;
 }
