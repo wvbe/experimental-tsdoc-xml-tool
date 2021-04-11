@@ -13,13 +13,15 @@ function formatDiagnostic(diagnostic) {}
 	inputFileNames.forEach(fileName => console.log(fileName));
 	console.groupEnd();
 	try {
-		const { diagnostics, documents } = run(inputFileNames, {
+		const { diagnostics, comments, parser } = run(inputFileNames, {
 			compilerOptions: {
 				lib: 'es2015'
 			}
 		});
-		console.group('Output:');
-		console.dir(documents);
+		console.group(`Output (${comments.length}):`);
+		comments.forEach(foundComment =>
+			console.dir(formatting.formatFoundComment(parser, foundComment))
+		);
 		console.groupEnd();
 		console.group(`Compiler diagnostics (${diagnostics.length}):`);
 		diagnostics.forEach(error => console.log(`> ${formatting.formatDiagnostic(error)}`));
