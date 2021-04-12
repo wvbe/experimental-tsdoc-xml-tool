@@ -20,7 +20,7 @@ function formatDiagnostic(diagnostic) {}
 		});
 		console.group(`Output (${comments.length}):`);
 		comments.forEach(foundComment =>
-			console.dir(formatting.formatFoundComment(parser, foundComment))
+			console.log(formatting.formatFoundComment(parser, foundComment))
 		);
 		console.groupEnd();
 		console.group(`Compiler diagnostics (${diagnostics.length}):`);

@@ -16,22 +16,37 @@ export function formatDiagnostic(diagnostic: ts.Diagnostic) {
 	}
 }
 
-function recursiveStringifyDocNode(node: tsdoc.DocNode) {
-	if (node instanceof tsdoc.DocPlainText) {
-		return node.text;
-	}
-	if (node instanceof tsdoc.DocSoftBreak) {
-		return os.EOL;
-	}
-	return node
-		.getChildNodes()
-		.map<string>(recursiveStringifyDocNode)
-		.join('');
+// function recursiveStringifyDocNode(node: tsdoc.DocNode) {
+// 	if (node instanceof tsdoc.DocPlainText) {
+// 		return node.text;
+// 	}
+// 	if (node instanceof tsdoc.DocSoftBreak) {
+// 		return os.EOL;
+// 	}
+// 	return node
+// 		.getChildNodes()
+// 		.map<string>(recursiveStringifyDocNode)
+// 		.join('');
+// }
+
+function theOtherRecursiveStringifyDocNode(node: tsdoc.DocNode, indent: string = ''): string[] {
+	return [
+		indent + node.kind,
+		...node
+			.getChildNodes()
+			.reduce<string[]>(
+				(all, child) => all.concat(theOtherRecursiveStringifyDocNode(child, indent + '  ')),
+				[]
+			)
+	];
 }
 
 export function formatFoundComment(parser: tsdoc.TSDocParser, foundComment: IFoundComment) {
 	const parserContext = parser.parseRange(foundComment.textRange);
-	return recursiveStringifyDocNode(parserContext.docComment).trim();
+	// console.dir(parserContext.docComment.getChildNodes()[0].getChildNodes());
+	return theOtherRecursiveStringifyDocNode(parserContext.docComment)
+		.join('\n')
+		.trim();
 	// console.dir(parserContext);
 	// const sourceFile = foundComment.compilerNode.getSourceFile();
 	// let formattedMessage = '';
